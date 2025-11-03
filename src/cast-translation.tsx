@@ -1,4 +1,4 @@
-import { Form, ActionPanel, Action, showToast, Toast } from "@raycast/api";
+import { Form, ActionPanel, Action, showToast, Toast, List, useNavigation } from "@raycast/api";
 
 const LANGUAGES = [
   { code: "bg", name: "Bulgarian", flag: "🇧🇬" },
@@ -70,7 +70,27 @@ async function fetchTranslation(originalText: string, sourceLanguage: string, ta
   }
 }
 
+function TranslationResultView({ translation }: { translation: Translation }) {
+  return (
+    <List>
+      <List.Item
+        title="Original text"
+        subtitle={translation.text}
+      />
+      {translation.translations.map((t, index) => (
+        <List.Item
+          key={index}
+          title={t.text}
+          accessories={[{ text: `${t.examples.length} examples` }]}
+        />
+      ))}
+    </List>
+  )
+}
+
 export default function Command() {
+  const { push } = useNavigation();
+
   async function handleSubmit(values: FormValues) {
     try {
       await showToast({ title: "Translating...", style: Toast.Style.Animated });
@@ -78,13 +98,11 @@ export default function Command() {
       const translations = await fetchTranslation(values.textarea, values.sourceLanguage, values.targetLanguage);
 
       if (translations && translations.length > 0) {
-        const firstTranslation = translations[0].translations[0]?.text || `No translation found for text: ${values.textarea}`;
-        console.log("Translation:", firstTranslation);
+        push(<TranslationResultView translation={translations[0]} />);
 
         await showToast({
           style: Toast.Style.Success,
           title: "Translation complete",
-          message: firstTranslation,
         });
       } else {
         await showToast({
