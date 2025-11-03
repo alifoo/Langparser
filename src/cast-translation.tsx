@@ -28,18 +28,11 @@ const LANGUAGES = [
   { code: "zh", name: "Chinese", flag: "🇨🇳" },
 ] as const;
 
-type Language = {
-  code: string;
-  name: string;
-  flag: string;
-}
-
 interface Translation {
   text: string;
   translations: {
     text: string;
-    examples:
-    {
+    examples: {
       src: string;
       dst: string;
     }[];
@@ -52,18 +45,21 @@ type FormValues = {
   targetLanguage: string;
 };
 
-async function fetchTranslation(originalText: string, sourceLanguage: string, targetLanguage: string): Promise<Translation[]> {
+async function fetchTranslation(
+  originalText: string,
+  sourceLanguage: string,
+  targetLanguage: string,
+): Promise<Translation[]> {
   try {
-    const url = `https://linguee-api.fly.dev/api/v2/translations?query=${encodeURIComponent(originalText)}&src=${sourceLanguage}&dst=${targetLanguage}&guess_direction=false&follow_corrections=always`
+    const url = `https://linguee-api.fly.dev/api/v2/translations?query=${encodeURIComponent(originalText)}&src=${sourceLanguage}&dst=${targetLanguage}&guess_direction=false&follow_corrections=always`;
     const response = await fetch(url);
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const translations: Translation[] = await response.json() as Translation[];
+    const translations: Translation[] = (await response.json()) as Translation[];
     return translations;
-
   } catch (error) {
     console.error("Error fetching translated text:", error);
     throw error;
@@ -73,19 +69,12 @@ async function fetchTranslation(originalText: string, sourceLanguage: string, ta
 function TranslationResultView({ translation }: { translation: Translation }) {
   return (
     <List>
-      <List.Item
-        title="Original text"
-        subtitle={translation.text}
-      />
+      <List.Item title="Original text" subtitle={translation.text} />
       {translation.translations.map((t, index) => (
-        <List.Item
-          key={index}
-          title={t.text}
-          accessories={[{ text: `${t.examples.length} examples` }]}
-        />
+        <List.Item key={index} title={t.text} accessories={[{ text: `${t.examples.length} examples` }]} />
       ))}
     </List>
-  )
+  );
 }
 
 export default function Command() {
@@ -130,25 +119,19 @@ export default function Command() {
       <Form.Description text="This command allows you to translate text into different languages. Select the source and target language below." />
       <Form.Dropdown id="sourceLanguage" title="Source language" defaultValue="en">
         {LANGUAGES.map((lang) => (
-          <Form.Dropdown.Item
-            key={lang.code}
-            value={lang.code}
-            title={lang.name}
-            icon={lang.flag}
-          />
+          <Form.Dropdown.Item key={lang.code} value={lang.code} title={lang.name} icon={lang.flag} />
         ))}
       </Form.Dropdown>
       <Form.Dropdown id="targetLanguage" title="Target language" defaultValue="en">
         {LANGUAGES.map((lang) => (
-          <Form.Dropdown.Item
-            key={lang.code}
-            value={lang.code}
-            title={lang.name}
-            icon={lang.flag}
-          />
+          <Form.Dropdown.Item key={lang.code} value={lang.code} title={lang.name} icon={lang.flag} />
         ))}
       </Form.Dropdown>
-      <Form.TextArea id="textarea" title="Text area" placeholder="Enter the text you wish to translate to the target language." />
+      <Form.TextArea
+        id="textarea"
+        title="Text area"
+        placeholder="Enter the text you wish to translate to the target language."
+      />
     </Form>
   );
 }
